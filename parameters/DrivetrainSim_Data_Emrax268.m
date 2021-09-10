@@ -63,5 +63,5 @@ AL    = 0.9;    % Max vehicle cross section area [m^2]
 Cd    = 0.4;    % Air drag coefficient           [N*s^2/kg*m]
 cr1   = 0.1;    % Rolling coefficient            
 cr2   = 0.2;    % Rolling coefficient            
-i_t   = 5;    % Gear reduction ratio           
+i_t   = 2.3;    % Gear reduction ratio           
 Rw    = 0.3;    % Wheel radius                   [m]
