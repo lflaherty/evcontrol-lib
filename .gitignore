@@ -1,1 +1,5 @@
+# Simulink generation files
+slprj/
+
+# Simulink cache files
 *.slxc
