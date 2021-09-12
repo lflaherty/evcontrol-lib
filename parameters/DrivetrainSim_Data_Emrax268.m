@@ -27,7 +27,8 @@ psim = 0.1014;     % Permanent magnet flux linkage   [Wb]
 p    = 10;         % Number of pole pairs
 Jm   = 0.0922;     % Rotor inertia                   [Kg*m^2]
 
-wmax = inf;
+wmax = inf * pi/30;  % Maximum motor speed [rad/s]
+wbase = 2000 * pi/30; % Base speed [rad/s]
 
 %% High-Voltage Battery Parameters
 Cdc  = 0.001;      % DC-link capacitor  [F]
