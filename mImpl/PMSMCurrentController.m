@@ -1,0 +1,104 @@
+classdef PMSMCurrentController < matlab.System & matlab.system.mixin.Propagates
+    % Implements field weakening of idqRef input
+
+    % Public, tunable properties
+    properties
+        Kp_id = 1;
+        Ki_id = 1;
+        AntiWindUpD = 1;
+        Kp_iq = 1;
+        Ki_iq = 1;
+        AntiWindUpQ = 1;
+        T = 0.001;
+    end
+
+    properties(DiscreteState)
+
+    end
+
+    % Pre-computed constants
+    properties(Access = private)
+        PI_id;
+        PI_iq;
+    end
+
+    methods(Access = protected)
+        function setupImpl(obj)
+            % Perform one-time calculations, such as computing constants
+            obj.PI_id = DiscretePID;
+            obj.PI_id.T = obj.T;
+            obj.PI_id.Kp = obj.Kp_id;
+            obj.PI_id.Ki = obj.Ki_id;
+            obj.PI_id.Kd = 0;
+            %obj.PI_id.upperLimitInt = obj.AntiWindUpD; % TODO anti windup doesn't work properly
+            %obj.PI_id.lowerLimitInt = -obj.AntiWindUpD;
+            %obj.PI_id.setupImpl();     % TODO need to figure out how to call these
+            
+            obj.PI_iq = DiscretePID;
+            obj.PI_iq.T = obj.T;
+            obj.PI_iq.Kp = obj.Kp_iq;
+            obj.PI_iq.Ki = obj.Ki_iq;
+            obj.PI_iq.Kd = 0;
+            %obj.PI_iq.upperLimitInt = obj.AntiWindUpQ;
+            %obj.PI_iq.lowerLimitInt = -obj.AntiWindUpQ;
+            %obj.PI_iq.setupImpl();
+        end
+
+        function [vdq, idq] = stepImpl(obj, idqRef, iabc, theta, we, Vdc)
+            % Apply a Park transform to obtain idq
+            phase = 2*pi/3;
+            half = 1/2;
+            M = [sin(theta), sin(theta - phase), sin(theta + phase); ...
+                 cos(theta), cos(theta - phase), cos(theta + phase); ...
+                 half,       half,               half];
+            idq0 = (2/3)*M*iabc;
+            id = idq0(1);
+            iq = idq0(2);
+            idq = [id; iq];
+            
+            % Valculate Vphmax
+            Vphmax = Vdc/sqrt(3);
+            
+            % D axis PI controller
+            obj.PI_id.upperLimit = Vphmax;
+            obj.PI_id.lowerLimit = -Vphmax;
+            vd = obj.PI_id.stepImpl(idqRef(1), id);
+            
+            % W axis PI controller
+            obj.PI_iq.upperLimit = Vphmax;
+            obj.PI_iq.lowerLimit = -Vphmax;
+            vq = obj.PI_iq.stepImpl(idqRef(2), iq);
+            
+            % TODO feedforward control
+            
+            vdq = [vd; vq];
+        end
+        
+        function resetImpl(obj)
+            % Initialize / reset discrete-state properties
+            obj.PI_id.resetImpl();
+            obj.PI_iq.resetImpl();
+        end
+    
+        %% Output sizing
+        function [sz1, sz2] = getOutputSizeImpl(~)
+            sz1 = [2,1];
+            sz2 = [2,1];
+        end
+        
+        function [fz1, fz2] = isOutputFixedSizeImpl(~)
+          fz1 = true;
+          fz2 = true;
+        end
+        
+        function [dt1, dt2] = getOutputDataTypeImpl(~)
+            dt1 = 'double';
+            dt2 = 'double';
+        end
+    
+        function [cp1, cp2] = isOutputComplexImpl(~)
+            cp1 = false;
+            cp2 = false;
+        end
+    end
+end
