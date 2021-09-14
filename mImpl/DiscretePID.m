@@ -93,7 +93,7 @@ classdef DiscretePID < matlab.System & matlab.system.mixin.Propagates
         end
         
         function [fz1] = isOutputFixedSizeImpl(~)
-          %Both outputs are always variable-sized
+          %Both outputs are always fixed-sized
           fz1 = true;
         end
         
