@@ -60,18 +60,24 @@ classdef PMSMCurrentController < matlab.System & matlab.system.mixin.Propagates
             Vphmax = Vdc/sqrt(3);
             
             % D axis PI controller
-            obj.PI_id.upperLimit = Vphmax;
-            obj.PI_id.lowerLimit = -Vphmax;
+            %obj.PI_id.upperLimit = Vphmax;
+            %obj.PI_id.lowerLimit = -Vphmax;
             vd = obj.PI_id.stepImpl(idqRef(1), id);
             
-            % W axis PI controller
-            obj.PI_iq.upperLimit = Vphmax;
-            obj.PI_iq.lowerLimit = -Vphmax;
+            % Q axis PI controller
+            %obj.PI_iq.upperLimit = Vphmax;
+            %obj.PI_iq.lowerLimit = -Vphmax;
             vq = obj.PI_iq.stepImpl(idqRef(2), iq);
             
             % TODO feedforward control
             
-            vdq = [vd; vq];
+            % d-q voltage limiter - Q axis prioritization
+            % vphmax^2 = vd^2 + vq^2
+            vq_sat = sat(vq, -Vphmax, Vphmax);
+            vd_lim = sqrt(Vphmax^2 - vq_sat^2);
+            vd_sat = sat(vd, -vd_lim, vd_lim);
+            
+            vdq = [vd_sat; vq_sat];
         end
         
         function resetImpl(obj)
