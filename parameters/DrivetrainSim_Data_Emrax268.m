@@ -1,20 +1,4 @@
-%% Parameters for Axle-Drive Electric Vehicle Example
-
-% This example shows an interior permanent magnet synchronous machine
-% (IPMSM) propelling a simplified axle-drive electric vehicle. A high-
-% voltage battery feeds the IPMSM through a controlled three-phase
-% converter. The IPMSM operates in both motoring and generating modes.
-% The vehicle transmission and differential are implemented using a
-% fixed-ratio gear reduction model. The Vehicle Controller subsystem
-% converts the driver inputs into a relevant torque command. The
-% EM Controller subsystem controls the torque of the IPMSM. The controller
-% includes a multi-rate PI-based control structure. The rate of the open-
-% loop torque control is slower than the rate of the closed-loop current 
-% control. The task scheduling for the controller is implemented as a 
-% Stateflow(R) state machine. The Scopes subsystem contains scopes 
-% that allow you to see the simulation results.
-
-% Copyright 2016 The MathWorks, Inc.
+%% Parameters for Emrax 268 based powertrain
 
 %% Machine Parameters
 Pmax = 200e3;      % Maximum power                   [W]
@@ -36,7 +20,7 @@ Vnom = 650;        % Nominal DC voltage [V]
 V1   = 625;        % Voltage V1(< Vnom) [V]
 
 %% Control Parameters
-Ts   = 1e-5;        % Fundamental sample time               [s]
+Ts   = 5e-6;        % Fundamental sample time               [s]
 fsw  = 15e3;        % PMSM drive switching frequency        [Hz]
 Tsi  = 1e-4;        % Sample time for current control loops [s]
 Tso  = 1e-4;        % Sample time for current ref generator [s]
@@ -51,10 +35,6 @@ numd_id = Tsi/(Kp_id/Ki_id);
 dend_id = [1 (Tsi-(Kp_id/Ki_id))/(Kp_id/Ki_id)];
 numd_iq = Tsi/(Kp_iq/Ki_iq);
 dend_iq = [1 (Tsi-(Kp_iq/Ki_iq))/(Kp_iq/Ki_iq)];
-
-%% Current References
-%load pe_ipmsm_35kW_ref_idq;
-genRefLut
 
 %% Vehicle Parameters
 Mv    = 250;   % Vehicle mass                   [kg]
