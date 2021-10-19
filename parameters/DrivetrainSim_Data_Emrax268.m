@@ -36,6 +36,10 @@ dend_id = [1 (Tsi-(Kp_id/Ki_id))/(Kp_id/Ki_id)];
 numd_iq = Tsi/(Kp_iq/Ki_iq);
 dend_iq = [1 (Tsi-(Kp_iq/Ki_iq))/(Kp_iq/Ki_iq)];
 
+%% Current References
+%load pe_ipmsm_35kW_ref_idq;
+genRefLut
+
 %% Vehicle Parameters
 Mv    = 250;   % Vehicle mass                   [kg]
 g     = 9.8;    % Gravitational acceleration     [m/s^2]
