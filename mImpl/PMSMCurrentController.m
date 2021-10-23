@@ -21,10 +21,9 @@ classdef PMSMCurrentController < matlab.System & matlab.system.mixin.Propagates
         PI_id;
         PI_iq;
     end
-
-    methods(Access = protected)
-        function setupImpl(obj)
-            % Perform one-time calculations, such as computing constants
+    
+    methods(Access = public)
+        function init(obj)
             obj.PI_id = DiscretePID;
             obj.PI_id.T = obj.T;
             obj.PI_id.Kp = obj.Kp_id;
@@ -43,18 +42,18 @@ classdef PMSMCurrentController < matlab.System & matlab.system.mixin.Propagates
             %obj.PI_iq.lowerLimitInt = -obj.AntiWindUpQ;
             %obj.PI_iq.setupImpl();
         end
+    end
+
+    methods(Access = protected)
+        function setupImpl(obj)
+            obj.init();
+        end
 
         function [vdq, idq] = stepImpl(obj, idqRef, iabc, theta, we, Vdc)
             % Apply a Park transform to obtain idq
-            phase = 2*pi/3;
-            half = 1/2;
-            M = [sin(theta), sin(theta - phase), sin(theta + phase); ...
-                 cos(theta), cos(theta - phase), cos(theta + phase); ...
-                 half,       half,               half];
-            idq0 = (2/3)*M*iabc;
-            id = idq0(1);
-            iq = idq0(2);
-            idq = [id; iq];
+            idq = parkTransform(iabc, theta);
+            id = idq(1);
+            iq = idq(2);
             
             % Valculate Vphmax
             Vphmax = Vdc/sqrt(3);

@@ -32,6 +32,8 @@ classdef PMSMCurrentRef < matlab.System & matlab.system.mixin.Propagates
             id = 0;
             iq = 2 * TqRefSat / (3 * obj.p * obj.psim);
             idqRef = [id; iq];
+            
+            % TODO field weakening
         end
         
         function resetImpl(obj)
