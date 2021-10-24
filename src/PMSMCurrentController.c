@@ -36,20 +36,16 @@ void PMSMCurrentControllerStep(PMSMCurrentController_T* controller,
     // D axis PI controller
     controller->pi_id.upperLimit = vphMax;
     controller->pi_id.lowerLimit = -vphMax;
-    real_T vd;
-    piStep(&controller->pi_id,  // D axis PID controller
-           &vd,                 // Output voltage
-           idqRef->id,          // Setpoint current
-           idqMeas.id);         // Measured current
+    real_T vd = piStep(&controller->pi_id,  // D axis PID controller
+                       idqRef->id,          // Setpoint current
+                       idqMeas.id);         // Measured current
     
     // Q axis PI controller
     controller->pi_iq.upperLimit = vphMax;
     controller->pi_iq.lowerLimit = -vphMax;
-    real_T vq;
-    piStep(&controller->pi_iq,  // Q axis PID controller
-           &vq,                 // Output voltage
-           idqRef->iq,          // Setpoint current
-           idqMeas.iq);         // Measured current
+    real_T vq = piStep(&controller->pi_iq,  // Q axis PID controller
+                       idqRef->iq,          // Setpoint current
+                       idqMeas.iq);         // Measured current
     
     // TODO feedforward control
 

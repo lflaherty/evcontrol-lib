@@ -37,7 +37,8 @@ void piInit(pi_T* pi);
 
 /**
  * Performs an update of the PI controller
+ * @returns PI controller output
  */
-void piStep(pi_T* pi, real_T* output, float setpoint, float measurement);
+real_T piStep(pi_T* pi, float setpoint, float measurement);
 
 #endif

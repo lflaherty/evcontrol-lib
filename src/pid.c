@@ -15,7 +15,7 @@ void piInit(pi_T* pi)
     pi->prevError = 0;
 }
 
-void piStep(pi_T* pi, real_T* output, real_T setpoint, real_T measurement)
+real_T piStep(pi_T* pi, real_T setpoint, real_T measurement)
 {
     real_T error = setpoint - measurement;
 
@@ -31,7 +31,9 @@ void piStep(pi_T* pi, real_T* output, real_T setpoint, real_T measurement)
     // Don't perform derivative...
 
     // Output and saturation
-    *output = sat(p + pi->integrator, pi->lowerLimit, pi->upperLimit);
+    real_T output = sat(p + pi->integrator, pi->lowerLimit, pi->upperLimit);
 
     pi->prevError = error;
+
+    return output;
 }
