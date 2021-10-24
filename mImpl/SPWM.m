@@ -25,18 +25,12 @@ classdef SPWM < matlab.System & matlab.system.mixin.Propagates
             % by hardware)
             
             % Inverse Park Transform
-            Vdq0 = [Vdq(1); Vdq(2); 0];
-            phase = 2*pi/3;
-            M = [sin(theta_elec),         cos(theta_elec),         1; ...
-                 sin(theta_elec - phase), cos(theta_elec - phase), 1; ...
-                 sin(theta_elec + phase), cos(theta_elec + phase), 1];
-            Vabc = M*Vdq0;
-            
-            % Convert to duty cycle
+            Vabc = inverseParkTransform(Vdq, theta_elec);
             Va = Vabc(1);
             Vb = Vabc(2);
             Vc = Vabc(3);
             
+            % Convert to duty cycle
             offset = Vdc/2;
             
             Vah = sat( (Va+offset)/Vdc, 0, 1);
