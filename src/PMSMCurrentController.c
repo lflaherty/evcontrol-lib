@@ -24,26 +24,26 @@ void PMSMCurrentControllerStep(PMSMCurrentController_T* controller,
                                Vdq_T* vdqOut,
                                const idq_T* idqRef,
                                const iabc_T* iabcMeas,
-                               const real_T theta_e,
-                               const real_T we,
-                               const real_T Vdc)
+                               const float theta_e,
+                               const float we,
+                               const float Vdc)
 {
     idq_T idqMeas;
     parkTransform(&idqMeas, iabcMeas, theta_e);
 
-    real_T vphMax = Vdc * ONE_SQRT3;
+    float vphMax = Vdc * ONE_SQRT3;
 
     // D axis PI controller
     controller->pi_id.upperLimit = vphMax;
     controller->pi_id.lowerLimit = -vphMax;
-    real_T vd = piStep(&controller->pi_id,  // D axis PID controller
+    float vd = piStep(&controller->pi_id,  // D axis PID controller
                        idqRef->id,          // Setpoint current
                        idqMeas.id);         // Measured current
     
     // Q axis PI controller
     controller->pi_iq.upperLimit = vphMax;
     controller->pi_iq.lowerLimit = -vphMax;
-    real_T vq = piStep(&controller->pi_iq,  // Q axis PID controller
+    float vq = piStep(&controller->pi_iq,  // Q axis PID controller
                        idqRef->iq,          // Setpoint current
                        idqMeas.iq);         // Measured current
     
@@ -51,8 +51,8 @@ void PMSMCurrentControllerStep(PMSMCurrentController_T* controller,
 
     // voltage limiter
     // Don't need to saturate vq - the PI controller already does this
-    real_T vdLim = sqrtf(vphMax*vphMax - vq*vq);
-    real_T vdSat = sat(vd, -vdLim, vdLim);
+    float vdLim = sqrtf(vphMax*vphMax - vq*vq);
+    float vdSat = sat(vd, -vdLim, vdLim);
 
     vdqOut->vd = vdSat;
     vdqOut->vq = vq; // saturated by PI controller

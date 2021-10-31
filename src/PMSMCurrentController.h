@@ -16,7 +16,7 @@
 typedef struct
 {
     // Parameters
-    real_T T; // sample time
+    float T; // sample time
 
     // Sub-modules
     pi_T pi_iq; // parameters here must be initialized too
@@ -37,8 +37,8 @@ void PMSMCurrentControllerStep(PMSMCurrentController_T* controller,
                                Vdq_T* vdqOut,
                                const idq_T* idqRef,
                                const iabc_T* iabcMeas,
-                               const real_T theta_e,
-                               const real_T we,
-                               const real_T Vdc);
+                               const float theta_e,
+                               const float we,
+                               const float Vdc);
 
 #endif

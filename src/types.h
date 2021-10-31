@@ -11,20 +11,13 @@
 #define _CONTROLLIB_TYPES_H
 
 /**
- * Use real_T for any data variable.
- * This typedef allows the underlying data type to be changed
- * (e.g. between single/double precision, or a fixed point integer) 
- */
-typedef float real_T;
-
-/**
  * Three phase duty cycles
  */
 typedef struct
 {
-    real_T a;
-    real_T b;
-    real_T c;
+    float a;
+    float b;
+    float c;
 } DutyCycle_T;
 
 /**
@@ -32,9 +25,9 @@ typedef struct
  */
 typedef struct
 {
-    real_T va;
-    real_T vb;
-    real_T vc;
+    float va;
+    float vb;
+    float vc;
 } Vabc_T;
 
 
@@ -43,8 +36,8 @@ typedef struct
  */
 typedef struct 
 {
-    real_T vd;
-    real_T vq;
+    float vd;
+    float vq;
 } Vdq_T;
 
 /**
@@ -52,9 +45,9 @@ typedef struct
  */
 typedef struct
 {
-    real_T ia;
-    real_T ib;
-    real_T ic;
+    float ia;
+    float ib;
+    float ic;
 } iabc_T;
 
 /**
@@ -62,8 +55,8 @@ typedef struct
  */
 typedef struct
 {
-    real_T id;
-    real_T iq;
+    float id;
+    float iq;
 } idq_T;
 
 

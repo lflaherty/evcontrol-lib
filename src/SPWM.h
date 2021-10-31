@@ -10,6 +10,6 @@
 
 #include "types.h"
 
-void spwmStep(DutyCycle_T* dutyCycles, const Vdq_T* Vdq, const real_T theta_e, const real_T Vdc);
+void spwmStep(DutyCycle_T* dutyCycles, const Vdq_T* Vdq, const float theta_e, const float Vdc);
 
 #endif

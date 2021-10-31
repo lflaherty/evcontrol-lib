@@ -10,7 +10,7 @@
 
 #include "types.h"
 
-void parkTransform(idq_T* idq, const iabc_T* iabc, const real_T theta_e);
-void inverseParkTransform(Vabc_T* Vabc, const Vdq_T* vdq, const real_T theta_e);
+void parkTransform(idq_T* idq, const iabc_T* iabc, const float theta_e);
+void inverseParkTransform(Vabc_T* Vabc, const Vdq_T* vdq, const float theta_e);
 
 #endif

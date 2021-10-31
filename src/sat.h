@@ -10,9 +10,9 @@
 
 #include "Types.h"
 
-static inline real_T sat(real_T value, const real_T lower, const real_T upper)
+static inline float sat(float value, const float lower, const float upper)
 {
-    real_T newValue = value;
+    float newValue = value;
 
     if (value > upper) {
         newValue = upper;

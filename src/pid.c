@@ -15,12 +15,12 @@ void piInit(pi_T* pi)
     pi->prevError = 0;
 }
 
-real_T piStep(pi_T* pi, real_T setpoint, real_T measurement)
+float piStep(pi_T* pi, float setpoint, float measurement)
 {
-    real_T error = setpoint - measurement;
+    float error = setpoint - measurement;
 
     // Proportional
-    real_T p = pi->Kp * error;
+    float p = pi->Kp * error;
 
     // Integral
     pi->integrator = pi->integrator + 0.5f * pi->Ki * pi->T * (error + pi->prevError);
@@ -31,7 +31,7 @@ real_T piStep(pi_T* pi, real_T setpoint, real_T measurement)
     // Don't perform derivative...
 
     // Output and saturation
-    real_T output = sat(p + pi->integrator, pi->lowerLimit, pi->upperLimit);
+    float output = sat(p + pi->integrator, pi->lowerLimit, pi->upperLimit);
 
     pi->prevError = error;
 
