@@ -8,19 +8,8 @@
 #ifndef _CONTROLLIB_SAT_H_
 #define _CONTROLLIB_SAT_H_
 
-#include "Types.h"
+#include "types.h"
 
-static inline float sat(float value, const float lower, const float upper)
-{
-    float newValue = value;
-
-    if (value > upper) {
-        newValue = upper;
-    } else if (value < lower) {
-        newValue = lower;
-    }
-
-    return newValue;
-}
+extern inline float sat(float value, const float lower, const float upper);
 
 #endif
