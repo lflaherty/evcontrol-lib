@@ -20,7 +20,6 @@ typedef struct
     float lowerLimit; // Output lower saturation
     float upperLimitInt; // Upper limit on integrator
     float lowerLimitInt; // Lower limit on integrator
-    float Kaw; // Anti-windup gain
     float Kp; // Proportional gain
     float Ki; // integral gain
 
