@@ -1,0 +1,3 @@
+[submodule "cImpl/evcontrol-lib"]
+	path = cImpl/evcontrol-lib
+	url = git@github.com:lflaherty/evcontrol-lib.git

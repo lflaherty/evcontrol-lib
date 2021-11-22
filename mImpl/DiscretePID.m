@@ -9,7 +9,6 @@ classdef DiscretePID < matlab.System & matlab.system.mixin.Propagates
         lowerLimit = -inf % Output lower saturation
         upperLimitInt = inf
         lowerLimitInt = -inf
-        Kaw = 1 % Anti-windup gain, Kaw
         Kp = 1 % Proportional gain, Kp
         Ki = 1 % Integral gain, Ki
         Kd = 1 % Derivative gain, Kd
