@@ -10,6 +10,7 @@
 #include <math.h>
 #include "constants.h"
 #include "transforms.h"
+#include "sat.h"
 
 void PMSMCurrentControllerInit(PMSMCurrentController_T* controller)
 {

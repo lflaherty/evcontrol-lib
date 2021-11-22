@@ -8,8 +8,6 @@
 #ifndef _CONTROLLIB_SAT_H_
 #define _CONTROLLIB_SAT_H_
 
-#include "types.h"
-
-extern inline float sat(float value, const float lower, const float upper);
+float sat(float value, const float lower, const float upper);
 
 #endif
