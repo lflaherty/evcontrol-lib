@@ -14,6 +14,13 @@
 
 typedef struct
 {
+    // Inputs
+    float setpoint;
+    float measurement;
+
+    // Outputs
+    float output;
+
     // Parameters
     float T; // sample time
     float upperLimit; // Output upper saturation
@@ -36,8 +43,8 @@ void piInit(pi_T* pi);
 
 /**
  * Performs an update of the PI controller
- * @returns PI controller output
+ * @param PI data used for input, output, and parameters
  */
-float piStep(pi_T* pi, float setpoint, float measurement);
+void piStep(pi_T* pi);
 
 #endif

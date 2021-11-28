@@ -12,21 +12,23 @@
 #include "sat.h"
 
 
-void PMSMCurrentRefStep(PMSMCurrentRef_T* currentRef,
-                        idq_T* idqRef,
-                        float* tqRefSat,
-                        float* tqLim,
-                        const float tqRef,
-                        const float wMech,
-                        const float Vdc)
+void PMSMCurrentRefInit(PMSMCurrentRef_T* currentRef)
 {
-    float speed = sat(fabsf(wMech), currentRef->Pmax/currentRef->Tmax, 10e3f); // todo sensible large number
-    *tqLim = (Vdc/currentRef->Vnom) * fminf(currentRef->Tmax, speed);
-    *tqRefSat = sat(tqRef, -(*tqLim), *tqLim);
+    currentRef->idqRef.id = 0.0f;
+    currentRef->idqRef.iq = 0.0f;
+    currentRef->tqRefSat = 0.0f;
+    currentRef->tqLim = 0.0f;
+}
+
+void PMSMCurrentRefStep(PMSMCurrentRef_T* currentRef)
+{
+    float speed = sat(fabsf(*currentRef->wMech), currentRef->Pmax/currentRef->Tmax, 10e3f); // todo sensible large number
+    currentRef->tqLim = (*currentRef->Vdc/currentRef->Vnom) * fminf(currentRef->Tmax, speed);
+    currentRef->tqRefSat = sat(*currentRef->tqRef, -(currentRef->tqLim), currentRef->tqLim);
 
     // zero d-axis control (ZDAC)
-    idqRef->id = 0.0f;
-    idqRef->iq = 2.0f * (*tqRefSat) / (3 * currentRef->polePairs * currentRef->fluxLink);
+    currentRef->idqRef.id = 0.0f;
+    currentRef->idqRef.iq = 2.0f * (currentRef->tqRefSat) / (3 * currentRef->polePairs * currentRef->fluxLink);
 
     // TODO field weakening
 }

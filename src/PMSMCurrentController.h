@@ -15,6 +15,16 @@
 
 typedef struct
 {
+    // Inputs
+    idq_T* idqRef;
+    iabc_T* iabcMeas;
+    float* theta_e;
+    float* we;
+    float* Vdc;
+
+    // Outputs
+    Vdq_T vdqOut;
+
     // Parameters
     float T; // sample time
 
@@ -32,13 +42,8 @@ void PMSMCurrentControllerInit(PMSMCurrentController_T* controller);
 
 /**
  * Performs an update of the PMSM Current Controller
+ * @param controller data used for input, output, and parameters
  */
-void PMSMCurrentControllerStep(PMSMCurrentController_T* controller,
-                               Vdq_T* vdqOut,
-                               const idq_T* idqRef,
-                               const iabc_T* iabcMeas,
-                               const float theta_e,
-                               const float we,
-                               const float Vdc);
+void PMSMCurrentControllerStep(PMSMCurrentController_T* controller);
 
 #endif

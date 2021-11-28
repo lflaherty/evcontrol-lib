@@ -10,6 +10,26 @@
 
 #include "types.h"
 
-void spwmStep(DutyCycle_T* dutyCycles, const Vdq_T* Vdq, const float theta_e, const float Vdc);
+typedef struct
+{
+    // Input
+    Vdq_T* Vdq;
+    float* theta_e;
+    float* Vdc;
+
+    // Output
+    DutyCycle_T dutyCycles;
+} SPWM_T;
+
+/**
+ * Initializes the internal fields.
+ */
+void spwmInit(SPWM_T* spwm);
+
+/**
+ * Performs an update of the Sinusoidal PWM
+ * @param spwm SPWM data
+ */
+void spwmStep(SPWM_T* spwm);
 
 #endif

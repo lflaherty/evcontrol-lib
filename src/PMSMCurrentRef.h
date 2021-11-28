@@ -16,6 +16,17 @@
 
 typedef struct
 {
+    // Inputs
+    float *tqRef; // Reference torque [Nm]
+    float *wMech; // Mechanical speed [rad/s]
+    float *Vdc; // DC bus voltage [V]
+
+    // Outputs
+    idq_T idqRef; // Output idq reference current [A]
+    float tqRefSat; // Troque reference (saturated) [Nm]
+    float tqLim; // Torque limit [Nm]
+
+    // Parameters
     float Vnom; // Nominal voltage [V]
     float Pmax; // Max power [W]
     float Tmax; // Max torque [Nm]
@@ -23,23 +34,16 @@ typedef struct
     float fluxLink; // Flux linkage [Webers]
 } PMSMCurrentRef_T;
 
+/**
+ * Initializes the internal fields.
+ */
+void PMSMCurrentRefInit(PMSMCurrentRef_T* currentRef);
+
 
 /**
  * Performs an update of the PMSM Current Reference generator
  * @param currentRef Current reference data
- * @param idqRef output idq reference current (out) [A]
- * @param tqRefSat Torque reference (saturated) (out) [Nm]
- * @param tqLim Torque limits (out) [Nm]
- * @param tqRef Reference torque [Nm]
- * @param wMech Mechanical speed [rad/s]
- * @param Vdc DC bus voltage [V]
  */
-void PMSMCurrentRefStep(PMSMCurrentRef_T* currentRef,
-                        idq_T* idqRef,
-                        float* tqRefSat,
-                        float* tqLim,
-                        const float tqRef,
-                        const float wMech,
-                        const float Vdc);
+void PMSMCurrentRefStep(PMSMCurrentRef_T* currentRef);
 
 #endif

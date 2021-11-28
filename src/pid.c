@@ -15,9 +15,9 @@ void piInit(pi_T* pi)
     pi->prevError = 0;
 }
 
-float piStep(pi_T* pi, float setpoint, float measurement)
+void piStep(pi_T* pi)
 {
-    float error = setpoint - measurement;
+    float error = pi->setpoint - pi->measurement;
 
     // Proportional
     float p = pi->Kp * error;
@@ -28,12 +28,10 @@ float piStep(pi_T* pi, float setpoint, float measurement)
     // Integral anti-windup
     pi->integrator = sat(pi->integrator, pi->lowerLimitInt, pi->upperLimitInt);
 
-    // Don't perform derivative...
+    // Don't perform derivative... (PI not PID)
 
     // Output and saturation
-    float output = sat(p + pi->integrator, pi->lowerLimit, pi->upperLimit);
+    pi->output = sat(p + pi->integrator, pi->lowerLimit, pi->upperLimit);
 
     pi->prevError = error;
-
-    return output;
 }
