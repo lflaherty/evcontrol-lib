@@ -3,3 +3,11 @@ slprj/
 
 # Simulink cache files
 *.slxc
+
+# S-Function compiled files
+/PMSMCurrentControllerWrapper*
+/SPWMWrapper*
+/PMSMCurrentRefWrapper*
+/SFB__*__SFB.mat
+rtwmakecfg.m
+
