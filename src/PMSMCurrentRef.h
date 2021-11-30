@@ -17,9 +17,9 @@
 typedef struct
 {
     // Inputs
-    float *tqRef; // Reference torque [Nm]
-    float *wMech; // Mechanical speed [rad/s]
-    float *Vdc; // DC bus voltage [V]
+    float tqRef; // Reference torque [Nm]
+    float wMech; // Mechanical speed [rad/s]
+    float Vdc; // DC bus voltage [V]
 
     // Outputs
     idq_T idqRef; // Output idq reference current [A]

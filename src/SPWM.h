@@ -13,9 +13,9 @@
 typedef struct
 {
     // Input
-    Vdq_T* Vdq;
-    float* theta_e;
-    float* Vdc;
+    Vdq_T Vdq;
+    float theta_e;
+    float Vdc;
 
     // Output
     DutyCycle_T dutyCycles;

@@ -14,6 +14,12 @@
 
 void PMSMCurrentControllerInit(PMSMCurrentController_T* controller)
 {
+    controller->idqRef.id = 0.0f;
+    controller->idqRef.iq = 0.0f;
+    controller->theta_e = 0.0f;
+    controller->we = 0.0f;
+    controller->Vdc = 0.0f;
+
     controller->vdqOut.vd = 0.0f;
     controller->vdqOut.vq = 0.0f;
 
@@ -27,15 +33,15 @@ void PMSMCurrentControllerInit(PMSMCurrentController_T* controller)
 void PMSMCurrentControllerStep(PMSMCurrentController_T* controller)
 {
     idq_T idqMeas;
-    parkTransform(&idqMeas, controller->iabcMeas, *controller->theta_e);
+    parkTransform(&idqMeas, &controller->iabcMeas, controller->theta_e);
 
-    float vphMax = *controller->Vdc * ONE_SQRT3;
+    float vphMax = controller->Vdc * ONE_SQRT3;
 
     // D axis PI controller
     pi_T* pi_id = &controller->pi_id;
     pi_id->upperLimit = vphMax;
     pi_id->lowerLimit = -vphMax;
-    pi_id->setpoint = controller->idqRef->id;
+    pi_id->setpoint = controller->idqRef.id;
     pi_id->measurement = idqMeas.id;
     piStep(pi_id);
     float vd = pi_id->output;
@@ -44,7 +50,7 @@ void PMSMCurrentControllerStep(PMSMCurrentController_T* controller)
     pi_T* pi_iq = &controller->pi_iq;
     pi_iq->upperLimit = vphMax;
     pi_iq->lowerLimit = -vphMax;
-    pi_iq->setpoint = controller->idqRef->iq;
+    pi_iq->setpoint = controller->idqRef.iq;
     pi_iq->measurement = idqMeas.iq;
     piStep(pi_iq);
     float vq = pi_iq->output;

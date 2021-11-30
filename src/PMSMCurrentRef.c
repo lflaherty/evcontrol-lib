@@ -14,6 +14,10 @@
 
 void PMSMCurrentRefInit(PMSMCurrentRef_T* currentRef)
 {
+    currentRef->tqRef = 0.0f;
+    currentRef->wMech = 0.0f;
+    currentRef->Vdc = 0.0f;
+
     currentRef->idqRef.id = 0.0f;
     currentRef->idqRef.iq = 0.0f;
     currentRef->tqRefSat = 0.0f;
@@ -22,9 +26,9 @@ void PMSMCurrentRefInit(PMSMCurrentRef_T* currentRef)
 
 void PMSMCurrentRefStep(PMSMCurrentRef_T* currentRef)
 {
-    float speed = sat(fabsf(*currentRef->wMech), currentRef->Pmax/currentRef->Tmax, 10e3f); // todo sensible large number
-    currentRef->tqLim = (*currentRef->Vdc/currentRef->Vnom) * fminf(currentRef->Tmax, speed);
-    currentRef->tqRefSat = sat(*currentRef->tqRef, -(currentRef->tqLim), currentRef->tqLim);
+    float speed = sat(fabsf(currentRef->wMech), currentRef->Pmax/currentRef->Tmax, 10e3f); // todo sensible large number
+    currentRef->tqLim = (currentRef->Vdc/currentRef->Vnom) * fminf(currentRef->Tmax, speed);
+    currentRef->tqRefSat = sat(currentRef->tqRef, -(currentRef->tqLim), currentRef->tqLim);
 
     // zero d-axis control (ZDAC)
     currentRef->idqRef.id = 0.0f;

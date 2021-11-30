@@ -16,11 +16,11 @@
 typedef struct
 {
     // Inputs
-    idq_T* idqRef;
-    iabc_T* iabcMeas;
-    float* theta_e;
-    float* we;
-    float* Vdc;
+    idq_T idqRef;
+    iabc_T iabcMeas;
+    float theta_e;
+    float we;
+    float Vdc;
 
     // Outputs
     Vdq_T vdqOut;
