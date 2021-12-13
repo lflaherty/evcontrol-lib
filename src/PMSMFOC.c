@@ -36,6 +36,11 @@ void FOC_Init(FOC_T* foc)
     PMSMCurrentRefInit(&foc->currentRef);
     PMSMCurrentControllerInit(&foc->controller);
     spwmInit(&foc->spwm);
+
+    // VDC filter
+    foc->vdcFilter.T = foc->T;
+    foc->vdcFilter.timeConst = FOC_VDC_FILTER_TIME_CONST;
+    lowPassFilter_Init(&foc->vdcFilter);
 }
 
 void FOC_Step(FOC_T* foc)
@@ -43,6 +48,10 @@ void FOC_Step(FOC_T* foc)
     // measurements
     float wElec = foc->polePairs * foc->wSense;
     float theta_e = fmodf(foc->polePairs * foc->thetaSense, TWO_PI);
+
+    // filter DC bus voltage
+    foc->vdcFilter.x = foc->vdcSense;
+    lowPassFilter_Step(&foc->vdcFilter);
 
     foc->currentRef.tqRef = foc->tqRef;
     foc->currentRef.wMech = foc->wSense;

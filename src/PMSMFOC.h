@@ -13,6 +13,9 @@
 #include "PMSMCurrentRef.h"
 #include "PMSMCurrentController.h"
 #include "SPWM.h"
+#include "lowPassFilter.h"
+
+#define FOC_VDC_FILTER_TIME_CONST 0.01f;
 
 typedef struct
 {
@@ -40,6 +43,9 @@ typedef struct
     PMSMCurrentRef_T currentRef;
     PMSMCurrentController_T controller;
     SPWM_T spwm;
+
+    // internal variables
+    LowPassFilter_T vdcFilter;
 } FOC_T;
 
 void FOC_Init(FOC_T* foc);
