@@ -13,3 +13,7 @@ rm -f ./SFB__*__SFB.mat
 rm -f rtwmakecfg.m
 echo Done
 
+echo Cleaning Simulink model cache files
+rm -f ./*.slxc
+echo Done
+
