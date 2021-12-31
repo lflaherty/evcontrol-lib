@@ -8,12 +8,15 @@ classdef FieldOrientedControl < matlab.System & matlab.system.mixin.Propagates
         Vnom = 0;
         Pmax = 0;
         Tmax = 0;
+        Imax = 0;
         p = 1;
         psim = 0;
         
         Rs = 0;
         Ld = 0;
         Lq = 0;
+        
+        wBase = 0; % Base speed [rad/s]
         
         Kp_id = 1;
         Ki_id = 1;
@@ -40,8 +43,11 @@ classdef FieldOrientedControl < matlab.System & matlab.system.mixin.Propagates
             obj.CurrentRef.Vnom = obj.Vnom;
             obj.CurrentRef.Pmax = obj.Pmax;
             obj.CurrentRef.Tmax = obj.Tmax;
+            obj.CurrentRef.Imax = obj.Imax;
+            obj.CurrentRef.wBase = obj.wBase;
             obj.CurrentRef.p = obj.p;
             obj.CurrentRef.psim = obj.psim;
+            obj.CurrentRef.Ld = obj.Ld;
             
             obj.CurrentController = PMSMCurrentController;
             obj.CurrentController.T = obj.T;

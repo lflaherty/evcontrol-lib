@@ -6,8 +6,11 @@ classdef PMSMCurrentRef < matlab.System & matlab.system.mixin.Propagates
         Vnom = 0;
         Pmax = 0;
         Tmax = 0;
+        Imax = 0;
+        wBase = 0; % Base speed [rad/s]
         p = 1;
         psim = 0;
+        Ld = 0;
     end
 
     properties(DiscreteState)
@@ -28,12 +31,27 @@ classdef PMSMCurrentRef < matlab.System & matlab.system.mixin.Propagates
             % Calculate torque limits
             TqLim = (Vdc/obj.Vnom) * min(obj.Tmax, obj.Pmax / sat(abs(wMech), obj.Pmax/obj.Tmax, inf));
             TqRefSat = sat(TqRef, -TqLim, TqLim);
+                        
+            % params needed for current ref generation
+            weBase = obj.p * obj.wBase;
+            fwGain = 2;
+            we = wMech * obj.p;
             
-            id = 0;
-            iq = 2 * TqRefSat / (3 * obj.p * obj.psim);
+            if wMech <= obj.wBase
+                % Zero d axis control
+                id = 0;
+                iq = sat(2 * TqRefSat / (3 * obj.p * obj.psim), -obj.Imax, obj.Imax);
+            else
+                % Field weakening
+                id_fw = fwGain * (weBase - we) * obj.psim / (we*obj.Ld);
+                id = max(id_fw, -obj.Imax);
+                
+                iq_fw = 2 * TqRefSat / (3 * obj.p * obj.psim);
+                iq_lim = sqrt(obj.Imax^2 - id^2);
+                iq = sat(iq_fw, -iq_lim, iq_lim);
+            end
+            
             idqRef = [id; iq];
-            
-            % TODO field weakening
         end
         
         function resetImpl(obj)

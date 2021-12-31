@@ -3,6 +3,7 @@
 %% Machine Parameters
 Pmax = 200e3;      % Maximum power                   [W]
 Tmax = 500;        % Maximum torque                  [N*m]
+Imax = 350;        % Maximum current                 [A]
 Ld   = 292e-6;     % Stator d-axis inductance        [H]
 Lq   = 272e-6;     % Stator q-axis inductance        [H]
 L0   = 0.00012184; % Stator zero-sequence inductance [H]
@@ -38,7 +39,7 @@ dend_iq = [1 (Tsi-(Kp_iq/Ki_iq))/(Kp_iq/Ki_iq)];
 
 %% Current References
 %load pe_ipmsm_35kW_ref_idq;
-genRefLut
+%genRefLut
 
 %% Vehicle Parameters
 Mv    = 250;   % Vehicle mass                   [kg]
