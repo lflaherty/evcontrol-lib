@@ -19,6 +19,7 @@ typedef struct
     // Inputs
     float tqRef; // Reference torque [Nm]
     float wMech; // Mechanical speed [rad/s]
+    float wElec; // Electrical speed [rad/s]
     float Vdc; // DC bus voltage [V]
 
     // Outputs
@@ -30,8 +31,14 @@ typedef struct
     float Vnom; // Nominal voltage [V]
     float Pmax; // Max power [W]
     float Tmax; // Max torque [Nm]
+    float Imax; // Max current [A]
+    float wBase; // Base speed [rad/s]
     uint16_t polePairs; // Pole pairs
     float fluxLink; // Flux linkage [Webers]
+    float Ld; // D axis inductance [H]
+
+    // Internal variables
+    float weBase; // Electrical base speed
 } PMSMCurrentRef_T;
 
 /**

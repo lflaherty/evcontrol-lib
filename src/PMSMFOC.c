@@ -55,6 +55,7 @@ void FOC_Step(FOC_T* foc)
 
     foc->currentRef.tqRef = foc->tqRef;
     foc->currentRef.wMech = foc->wSense;
+    foc->currentRef.wElec = wElec;
     foc->currentRef.Vdc = foc->vdcSense;
     PMSMCurrentRefStep(&foc->currentRef);
 
