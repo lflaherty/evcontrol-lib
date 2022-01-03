@@ -29,8 +29,8 @@ void PMSMCurrentRefInit(PMSMCurrentRef_T* currentRef)
 
 void PMSMCurrentRefStep(PMSMCurrentRef_T* currentRef)
 {
-    float speed = sat(fabsf(currentRef->wMech), currentRef->Pmax/currentRef->Tmax, 10e3f); // todo sensible large number
-    currentRef->tqLim = (currentRef->Vdc/currentRef->Vnom) * fminf(currentRef->Tmax, speed);
+    float speed = fmaxf(fabsf(currentRef->wMech), currentRef->Pmax / currentRef->Tmax);
+    currentRef->tqLim = (currentRef->Vdc / currentRef->Vnom) * fminf(currentRef->Tmax, currentRef->Pmax / speed);
     currentRef->tqRefSat = sat(currentRef->tqRef, -(currentRef->tqLim), currentRef->tqLim);
 
     if (currentRef->wMech < currentRef->wBase) {
