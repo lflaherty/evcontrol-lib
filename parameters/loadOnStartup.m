@@ -1,3 +1,4 @@
 %% Load a set of parameters for the sim
 
-DrivetrainSim_Data_Emrax268
+motor_emrax268
+vehicle
