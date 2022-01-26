@@ -5,24 +5,39 @@ function w = hallSensorSpeedCalc(hallA, hallB, hallC, CLOCK_COUNTS, CLOCK_FREQ)
     persistent counter
     persistent hallCounts
     persistent prevHalls
+    persistent prevPhase
+    persistent direction
     persistent result
     if isempty(init)
         init = 1;
         counter = 0;
         hallCounts = 0;
         prevHalls = [false, false, false];
+        direction = 'forward';
+        prevPhase = 'A'; % or B, or C
         result = 0;
     end
 
     % Hall effect counters
     if prevHalls(1) == false && hallA == true
         hallCounts = hallCounts + 1;
+        prevPhase = 'A';
+        disp('A');
     end
     if prevHalls(2) == false && hallB == true
         hallCounts = hallCounts + 1;
+        if prevPhase == 'A'
+            direction = 'reverse';
+        elseif prevPhase == 'C'
+            direction = 'forward';
+        end
+        prevPhase = 'B';
+        disp('B');
     end
     if prevHalls(3) == false && hallC == true
         hallCounts = hallCounts + 1;
+        prevPhase = 'C';
+        disp('C');
     end
     
     prevHalls = [hallA, hallB, hallC];
@@ -49,7 +64,13 @@ function w = hallSensorSpeedCalc(hallA, hallB, hallC, CLOCK_COUNTS, CLOCK_FREQ)
         counter = 0;
     end
 
-    w = result;
+    if strcmp(direction, 'forward') == 0
+        w = result;
+    elseif strcmp(direction, 'reverse') == 0
+        w = -result;
+    else
+        w = 0;
+    end
 
 end
 
