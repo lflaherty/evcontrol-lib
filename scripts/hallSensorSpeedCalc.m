@@ -50,7 +50,7 @@ function w = hallSensorSpeedCalc(hallA, hallB, hallC, CLOCK_COUNTS, CLOCK_FREQ)
         % 3 0->1 transitions across hallA-C => 1 rev.
         revPerSecond = hallCounts / timing_period;
         revPerSecond = revPerSecond / 3; % Across 3 hall signals
-        revPerSecond = revPerSecond / 10; % pole pairs
+%         revPerSecond = revPerSecond / 10; % pole pairs
         rpm = revPerSecond * 60;
 
         % Update result
