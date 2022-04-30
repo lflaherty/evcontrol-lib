@@ -1,8 +1,8 @@
 %% Parameters for Emrax 268 based powertrain
 %% Machine Parameters
-Pmax = 200e3;      % Maximum power                   [W]
+Pmax = 230e3;      % Maximum power                   [W]
 Tmax = 500;        % Maximum torque                  [N*m]
-Imax = 350;        % Maximum current                 [A]
+Imax = 565;        % Maximum current                 [A]
 Ld   = 292e-6;     % Stator d-axis inductance        [H]
 Lq   = 272e-6;     % Stator q-axis inductance        [H]
 L0   = 0.00012184; % Stator zero-sequence inductance [H]
@@ -15,7 +15,7 @@ wmax = inf * pi/30;  % Maximum motor speed [rad/s]
 wbase = 2000 * pi/30; % Base speed [rad/s]
 
 %% High-Voltage Battery Parameters
-Cdc  = 0.001;      % DC-link capacitor  [F]
+Cdc  = 255e-6;     % DC-link capacitor  [F]
 Vnom = 650;        % Nominal DC voltage [V] 
 V1   = 625;        % Voltage V1(< Vnom) [V]
 
