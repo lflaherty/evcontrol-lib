@@ -1,4 +1,4 @@
-classdef FieldOrientedControl < matlab.System & matlab.system.mixin.Propagates
+classdef FieldOrientedSpeedControl < matlab.System & matlab.system.mixin.Propagates
     % Implements Sinusoidal PWM
 
     % Public, tunable properties
@@ -24,6 +24,10 @@ classdef FieldOrientedControl < matlab.System & matlab.system.mixin.Propagates
         Kp_iq = 1;
         Ki_iq = 1;
         AntiWindUpQ = 1;
+        
+        Kp_speed = 1; % Speed PI P gain
+        Ki_speed = 0; % Speed PI I gain
+        AntiWindUpSpeed = 1;
     end
 
     properties(DiscreteState)
@@ -32,60 +36,60 @@ classdef FieldOrientedControl < matlab.System & matlab.system.mixin.Propagates
 
     % Pre-computed constants
     properties(Access = private)
-        CurrentRef;
-        CurrentController;
-        PWM;
-    end
-    
-    methods(Access = public)
-        function init(obj)
-            obj.CurrentRef = PMSMCurrentRef;
-            obj.CurrentRef.Vnom = obj.Vnom;
-            obj.CurrentRef.Pmax = obj.Pmax;
-            obj.CurrentRef.Tmax = obj.Tmax;
-            obj.CurrentRef.Imax = obj.Imax;
-            obj.CurrentRef.wBase = obj.wBase;
-            obj.CurrentRef.p = obj.p;
-            obj.CurrentRef.psim = obj.psim;
-            obj.CurrentRef.Ld = obj.Ld;
-            
-            obj.CurrentController = PMSMCurrentController;
-            obj.CurrentController.T = obj.T;
-            obj.CurrentController.Kp_id = obj.Kp_id;
-            obj.CurrentController.Ki_id = obj.Ki_id;
-            obj.CurrentController.AntiWindUpD = obj.AntiWindUpD;
-            obj.CurrentController.Kp_iq = obj.Kp_iq;
-            obj.CurrentController.Ki_iq = obj.Ki_iq;
-            obj.CurrentController.AntiWindUpQ = obj.AntiWindUpQ;
-            obj.CurrentController.init();
-            
-            obj.PWM = SPWM;
-        end
+        FOC;
+        PI_speed;
     end
 
     methods(Access = protected)
         function setupImpl(obj)
-            obj.init();
+            obj.FOC = FieldOrientedControl;
+            obj.FOC.T = obj.T;
+            
+            obj.FOC.Vnom = obj.Vnom;
+            obj.FOC.Pmax = obj.Pmax;
+            obj.FOC.Tmax = obj.Tmax;
+            obj.FOC.Imax = obj.Imax;
+            obj.FOC.p = obj.p;
+            obj.FOC.psim = obj.psim;
+            
+            obj.FOC.Rs = obj.Rs;
+            obj.FOC.Ld = obj.Ld;
+            obj.FOC.Lq = obj.Lq;
+            
+            obj.FOC.wBase = obj.wBase;
+            
+            obj.FOC.Kp_id = obj.Kp_id;
+            obj.FOC.Ki_id = obj.Ki_id;
+            obj.FOC.AntiWindUpD = obj.AntiWindUpD;
+            obj.FOC.Kp_iq = obj.Kp_iq;
+            obj.FOC.Ki_iq = obj.Ki_iq;
+            obj.FOC.AntiWindUpQ = obj.AntiWindUpQ;
+            
+            obj.FOC.init();
+            
+            obj.PI_speed = DiscretePID;
+            obj.PI_speed.T = obj.T;
+            obj.PI_speed.Kp = obj.Kp_speed;
+            obj.PI_speed.Ki = obj.Ki_speed;
+            obj.PI_speed.Kd = 0;
+            %obj.PI_speed.upperLimitInt = obj.AntiWindUpSpeed; % TODO anti windup doesn't work properly
+            %obj.PI_speed.lowerLimitInt = -obj.AntiWindUpSpeed;
+            %obj.PI_speed.setupImpl();     % TODO need to figure out how to call these
         end
 
-        function [Dabc, Vdq, idqRef, TqRefSat, TqLim, TqEst, rpm_base] = stepImpl(obj, TqRef, we, iabc, theta_e, Vdc)
-            wMech = we/obj.p;
+        function [Dabc, Vdq, idqRef, TqRefSat, TqLim, TqEst, rpm_base] = stepImpl(obj, RpmRef, RpmMeas, TqEnable, we, iabc, theta_e, Vdc)
+            if TqEnable > 0
+                tqRef = obj.PI_speed.stepImpl(RpmRef, RpmMeas);
+            else
+                tqRef = 0.0;
+            end
             
-            % Estimate some things:
-            idq = parkTransform(iabc, theta_e);
-            TqEst = torqueEst(obj.p, obj.psim, idq, [obj.Ld; obj.Lq]);
-            [~, rpm_base] = obj.calcBaseSpeed(idq, Vdc);
-            
-            % Perform control:
-            [idqRef, TqRefSat, TqLim] = obj.CurrentRef.stepImpl(TqRef, wMech, Vdc);
-            [Vdq, ~] = obj.CurrentController.stepImpl(idqRef, iabc, theta_e, we, Vdc);
-            Dabc = obj.PWM.stepImpl(Vdq, theta_e, Vdc);
+            [Dabc, Vdq, idqRef, TqRefSat, TqLim, TqEst, rpm_base] = obj.FOC.stepImpl(tqRef, we, iabc, theta_e, Vdc);
         end
 
         function resetImpl(obj)
             % Initialize / reset discrete-state properties
-            obj.CurrentController.resetImpl();
-            obj.PWM.resetImpl();
+            obj.FOC.resetImpl();
         end
         
         function [w_base, rpm_base] = calcBaseSpeed(obj, idq, Vdc)

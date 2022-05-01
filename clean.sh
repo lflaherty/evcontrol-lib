@@ -9,6 +9,7 @@ rm -f ./PMSMCurrentControllerWrapper*
 rm -f ./SPWMWrapper*
 rm -f ./PMSMCurrentRefWrapper*
 rm -f ./PMSMFOCWrapper*
+rm -f ./focSpeedWrapper*
 rm -f ./SFB__*__SFB.mat
 rm -f rtwmakecfg.m
 echo Done
