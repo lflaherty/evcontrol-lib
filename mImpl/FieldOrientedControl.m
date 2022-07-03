@@ -68,7 +68,7 @@ classdef FieldOrientedControl < matlab.System & matlab.system.mixin.Propagates
             obj.init();
         end
 
-        function [Dabc, Vdq, idqRef, TqRefSat, TqLim, TqEst, rpm_base] = stepImpl(obj, TqRef, we, iabc, theta_e, Vdc)
+        function [Dabc, Vdq, idqRef, idq, TqRefSat, TqLim, TqEst, rpm_base] = stepImpl(obj, TqRef, we, iabc, theta_e, Vdc)
             wMech = we/obj.p;
             
             % Estimate some things:
@@ -100,17 +100,18 @@ classdef FieldOrientedControl < matlab.System & matlab.system.mixin.Propagates
         end
     
         %% Output sizing
-        function [sz1, sz2, sz3, sz4, sz5, sz6, sz7] = getOutputSizeImpl(obj)            
+        function [sz1, sz2, sz3, sz4, sz5, sz6, sz7, sz8] = getOutputSizeImpl(obj)            
             sz1 = [3,1];
             sz2 = [2,1];
             sz3 = [2,1];
-            sz4 = [1,1];
+            sz4 = [2,1];
             sz5 = [1,1];
             sz6 = [1,1];
             sz7 = [1,1];
+            sz8 = [1,1];
         end
         
-        function [fz1, fz2, fz3, fz4, fz5, fz6, fz7] = isOutputFixedSizeImpl(~)
+        function [fz1, fz2, fz3, fz4, fz5, fz6, fz7, fz8] = isOutputFixedSizeImpl(~)
             fz1 = true;
             fz2 = true;
             fz3 = true;
@@ -118,9 +119,10 @@ classdef FieldOrientedControl < matlab.System & matlab.system.mixin.Propagates
             fz5 = true;
             fz6 = true;
             fz7 = true;
+            fz8 = true;
         end
         
-        function [dt1, dt2, dt3, dt4, dt5, dt6, dt7] = getOutputDataTypeImpl(obj)
+        function [dt1, dt2, dt3, dt4, dt5, dt6, dt7, dt8] = getOutputDataTypeImpl(obj)
             dt1 = 'double';
             dt2 = 'double';
             dt3 = 'double';
@@ -128,9 +130,10 @@ classdef FieldOrientedControl < matlab.System & matlab.system.mixin.Propagates
             dt5 = 'double';
             dt6 = 'double';
             dt7 = 'double';
+            dt8 = 'double';
         end
     
-        function [cp1, cp2, cp3, cp4, cp5, cp6, cp7] = isOutputComplexImpl(obj)
+        function [cp1, cp2, cp3, cp4, cp5, cp6, cp7, cp8] = isOutputComplexImpl(obj)
             cp1 = false;
             cp2 = false;
             cp3 = false;
@@ -138,6 +141,7 @@ classdef FieldOrientedControl < matlab.System & matlab.system.mixin.Propagates
             cp5 = false;
             cp6 = false;
             cp7 = false;
+            cp8 = false;
         end
     end
 end
