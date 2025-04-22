@@ -18,8 +18,7 @@ typedef struct
 {
     // Inputs
     float tqRef; // Reference torque [Nm]
-    float wMech; // Mechanical speed [rad/s]
-    float wElec; // Electrical speed [rad/s]
+    float we; // Electrical speed [rad/s]
     float Vdc; // DC bus voltage [V]
 
     // Outputs
@@ -36,9 +35,9 @@ typedef struct
     uint16_t polePairs; // Pole pairs
     float fluxLink; // Flux linkage [Webers]
     float Ld; // D axis inductance [H]
-
-    // Internal variables
-    float weBase; // Electrical base speed
+    float Ke; // back emf constant [V/rpm]
+    float Modulation_Index_Threshold; // Field weakening M threshold
+    float Modulation_Index_FwMax; // Field weakening M saturation
 } PMSMCurrentRef_T;
 
 /**

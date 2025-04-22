@@ -7,10 +7,12 @@ classdef PMSMCurrentRef < matlab.System & matlab.system.mixin.Propagates
         Pmax = 0;
         Tmax = 0;
         Imax = 0;
-        wBase = 0; % Base speed [rad/s]
         p = 1;
         psim = 0;
         Ld = 0;
+        Ke = 0;
+        Modulation_Index_Threshold = 0;
+        Modulation_Index_FwMax = 0;
     end
 
     properties(DiscreteState)
@@ -27,28 +29,38 @@ classdef PMSMCurrentRef < matlab.System & matlab.system.mixin.Propagates
             % Perform one-time calculations, such as computing constants
         end
 
-        function [idqRef, TqRefSat, TqLim] = stepImpl(obj, TqRef, wMech, Vdc)
+        function [idqRef, TqRefSat, TqLim] = stepImpl(obj, TqRef, we, Vdc)
             % Calculate torque limits
+            wMech = we / obj.p;
             TqLim = (Vdc/obj.Vnom) * min(obj.Tmax, obj.Pmax / sat(abs(wMech), obj.Pmax/obj.Tmax, inf));
             TqRefSat = sat(TqRef, -TqLim, TqLim);
-                        
+
             % params needed for current ref generation
-            weBase = obj.p * obj.wBase;
-            fwGain = 2;
-            we = wMech * obj.p;
-            
-            if wMech <= obj.wBase
+            we_rpm = we * (30 / pi) / obj.p;
+            back_emf = obj.Ke * we_rpm;
+            VphMax = Vdc / sqrt(3);
+            if VphMax == 0
+                VphMax = 0.1;
+            end
+
+            % Modulation index
+            M = back_emf / VphMax;
+
+            I_nom = 2 * TqRefSat / (3 * obj.p * obj.psim);
+            if M <= obj.Modulation_Index_Threshold
                 % Zero d axis control
                 id = 0;
-                iq = sat(2 * TqRefSat / (3 * obj.p * obj.psim), -obj.Imax, obj.Imax);
+                iq = sat(I_nom, -obj.Imax, obj.Imax);
             else
                 % Field weakening
-                id_fw = fwGain * (weBase - we) * obj.psim / (we*obj.Ld);
-                id = max(id_fw, -obj.Imax);
-                
-                iq_fw = 2 * TqRefSat / (3 * obj.p * obj.psim);
+                id = ...
+                    -obj.Imax * ...
+                    (M - obj.Modulation_Index_Threshold) / ...
+                    (obj.Modulation_Index_FwMax - obj.Modulation_Index_Threshold);
+                id = sat(id, -obj.Imax, 0);
+
                 iq_lim = sqrt(obj.Imax^2 - id^2);
-                iq = sat(iq_fw, -iq_lim, iq_lim);
+                iq = sat(I_nom, -iq_lim, iq_lim);
             end
             
             idqRef = [id; iq];

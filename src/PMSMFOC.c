@@ -54,8 +54,7 @@ void FOC_Step(FOC_T* foc)
     lowPassFilter_Step(&foc->vdcFilter);
 
     foc->currentRef.tqRef = foc->tqRef;
-    foc->currentRef.wMech = foc->wSense;
-    foc->currentRef.wElec = wElec;
+    foc->currentRef.we = wElec;
     foc->currentRef.Vdc = foc->vdcSense;
     PMSMCurrentRefStep(&foc->currentRef);
 
@@ -78,5 +77,4 @@ void FOC_Step(FOC_T* foc)
     foc->tqRefSat = foc->currentRef.tqRefSat;
     foc->tqLim = foc->currentRef.tqLim;
     foc->tqEst = 0.0f; // TODO
-    foc->rpmBase = 0.0f; // TODO
 }

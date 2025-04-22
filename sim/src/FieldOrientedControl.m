@@ -15,8 +15,7 @@ classdef FieldOrientedControl < matlab.System & matlab.system.mixin.Propagates
         Rs = 0;
         Ld = 0;
         Lq = 0;
-        
-        wBase = 0; % Base speed [rad/s]
+        Ke = 0;
         
         Kp_id = 1;
         Ki_id = 1;
@@ -24,6 +23,9 @@ classdef FieldOrientedControl < matlab.System & matlab.system.mixin.Propagates
         Kp_iq = 1;
         Ki_iq = 1;
         AntiWindUpQ = 1;
+
+        Modulation_Index_Threshold = 0;  % Field weakening M threshold
+        Modulation_Index_FwMax = 0;  % Field weakening M saturation
     end
 
     properties(DiscreteState)
@@ -44,11 +46,13 @@ classdef FieldOrientedControl < matlab.System & matlab.system.mixin.Propagates
             obj.CurrentRef.Pmax = obj.Pmax;
             obj.CurrentRef.Tmax = obj.Tmax;
             obj.CurrentRef.Imax = obj.Imax;
-            obj.CurrentRef.wBase = obj.wBase;
             obj.CurrentRef.p = obj.p;
             obj.CurrentRef.psim = obj.psim;
             obj.CurrentRef.Ld = obj.Ld;
-            
+            obj.CurrentRef.Ke = obj.Ke;
+            obj.CurrentRef.Modulation_Index_Threshold = obj.Modulation_Index_Threshold;
+            obj.CurrentRef.Modulation_Index_FwMax = obj.Modulation_Index_FwMax;
+
             obj.CurrentController = PMSMCurrentController;
             obj.CurrentController.T = obj.T;
             obj.CurrentController.Kp_id = obj.Kp_id;
@@ -58,7 +62,7 @@ classdef FieldOrientedControl < matlab.System & matlab.system.mixin.Propagates
             obj.CurrentController.Ki_iq = obj.Ki_iq;
             obj.CurrentController.AntiWindUpQ = obj.AntiWindUpQ;
             obj.CurrentController.init();
-            
+
             obj.PWM = SPWM;
         end
     end
@@ -69,15 +73,13 @@ classdef FieldOrientedControl < matlab.System & matlab.system.mixin.Propagates
         end
 
         function [Dabc, Vdq, idqRef, idq, TqRefSat, TqLim, TqEst, rpm_base] = stepImpl(obj, TqRef, we, iabc, theta_e, Vdc)
-            wMech = we/obj.p;
-            
             % Estimate some things:
             idq = parkTransform(iabc, theta_e);
             TqEst = torqueEst(obj.p, obj.psim, idq, [obj.Ld; obj.Lq]);
             [~, rpm_base] = obj.calcBaseSpeed(idq, Vdc);
             
             % Perform control:
-            [idqRef, TqRefSat, TqLim] = obj.CurrentRef.stepImpl(TqRef, wMech, Vdc);
+            [idqRef, TqRefSat, TqLim] = obj.CurrentRef.stepImpl(TqRef, we, Vdc);
             [Vdq, ~] = obj.CurrentController.stepImpl(idqRef, iabc, theta_e, we, Vdc);
             Dabc = obj.PWM.stepImpl(Vdq, theta_e, Vdc);
         end
@@ -87,7 +89,7 @@ classdef FieldOrientedControl < matlab.System & matlab.system.mixin.Propagates
             obj.CurrentController.resetImpl();
             obj.PWM.resetImpl();
         end
-        
+
         function [w_base, rpm_base] = calcBaseSpeed(obj, idq, Vdc)
             i_max = sqrt(3)*obj.Pmax/Vdc;
             v_max = Vdc/sqrt(3) - obj.Rs*i_max;
@@ -98,7 +100,7 @@ classdef FieldOrientedControl < matlab.System & matlab.system.mixin.Propagates
             w_base = (1/obj.p)* v_max/sqrt((obj.Lq*iq)^2+(obj.Ld*id+obj.psim)^2);
             rpm_base = w_base * 30/pi;
         end
-    
+
         %% Output sizing
         function [sz1, sz2, sz3, sz4, sz5, sz6, sz7, sz8] = getOutputSizeImpl(obj)            
             sz1 = [3,1];
