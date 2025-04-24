@@ -12,32 +12,25 @@
 #include "sat.h"
 
 
-void PMSMCurrentRefInit(PMSMCurrentRef_T* currentRef)
+void PMSMCurrentRefInit(void)
 {
-    // zero inputs
-    currentRef->tqRef = 0.0f;
-    currentRef->we = 0.0f;
-    currentRef->Vdc = 0.0f;
-
-    // zero ouptuts
-    currentRef->idqRef.id = 0.0f;
-    currentRef->idqRef.iq = 0.0f;
-    currentRef->tqRefSat = 0.0f;
-    currentRef->tqLim = 0.0f;
+    // empty
 }
 
-void PMSMCurrentRefStep(PMSMCurrentRef_T* currentRef)
+void PMSMCurrentRefStep(const PMSMCurrentRef_Params_t* params,
+                        const PMSMCurrentRef_Input_t* in,
+                        PMSMCurrentRef_Output_t* out)
 {
     // Calculate torque limits
-    float wMech = currentRef->we / currentRef->polePairs; 
-    float speed = fmaxf(fabsf(wMech), currentRef->Pmax / currentRef->Tmax);
-    currentRef->tqLim = (currentRef->Vdc / currentRef->Vnom) * fminf(currentRef->Tmax, currentRef->Pmax / speed);
-    currentRef->tqRefSat = sat(currentRef->tqRef, -(currentRef->tqLim), currentRef->tqLim);
+    float wMech = in->we / params->polePairs; 
+    float speed = fmaxf(fabsf(wMech), params->Pmax / params->Tmax);
+    out->tqLim = (in->Vdc / params->Vnom) * fminf(params->Tmax, params->Pmax / speed);
+    out->tqRefSat = sat(in->tqRef, -(out->tqLim), out->tqLim);
 
     // params needed for current ref generation
-    float we_rpm = currentRef->we * (30.0f / M_PI) / currentRef->polePairs;
-    float back_emf = currentRef->Ke * we_rpm;
-    float VphMax = currentRef->Vdc * ONE_SQRT3;
+    float we_rpm = in->we * (30.0f / M_PI) / params->polePairs;
+    float back_emf = params->Ke * we_rpm;
+    float VphMax = in->Vdc * ONE_SQRT3;
     if (VphMax == 0.0f) {
         VphMax = 0.1f;
     }
@@ -48,22 +41,24 @@ void PMSMCurrentRefStep(PMSMCurrentRef_T* currentRef)
     float iq;
     float id;
 
-    float I_nom = 2.0f * (currentRef->tqRefSat) / (3.0f * currentRef->polePairs * currentRef->fluxLink);
-    if (M <= currentRef->Modulation_Index_Threshold) {
+    float I_nom = 2.0f * (out->tqRefSat) / (3.0f * params->polePairs * params->fluxLink);
+    if (M <= params->Modulation_Index_Threshold) {
         // zero d-axis control (ZDAC)
         id = 0.0f;
-        iq = sat(I_nom, -currentRef->Imax, currentRef->Imax);
+        iq = sat(I_nom, -(params->Imax), params->Imax);
     } else {
         // Field weakening
-        id = -currentRef->Imax *
-            (M - currentRef->Modulation_Index_Threshold) /
-            (currentRef->Modulation_Index_FwMax - currentRef->Modulation_Index_Threshold);
-        id = sat(id, -currentRef->Imax, 0);
+        id = -params->Imax *
+            (M - params->Modulation_Index_Threshold) /
+            (params->Modulation_Index_FwMax - params->Modulation_Index_Threshold);
+        id = sat(id, -params->Imax, 0);
 
-        float iq_lim = sqrtf(powf(currentRef->Imax, 2.0f) - powf(id, 2.0f));
+        float iq_lim = sqrtf(powf(params->Imax, 2.0f) - powf(id, 2.0f));
         iq = sat(I_nom, -iq_lim, iq_lim);
     }
 
-    currentRef->idqRef.id = id;
-    currentRef->idqRef.iq = iq;
+    out->idqRef = (idq_T){
+        .id = id,
+        .iq = iq,
+    };
 }

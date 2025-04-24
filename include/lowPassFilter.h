@@ -12,26 +12,19 @@
 
 typedef struct
 {
-    // Inputs
-    float x;
-
-    // Outputs
-    float y;
-
-    // Parameters
     float T; // sample time [s]
     float timeConst; // time constant
+} LowPassFilter_Params_t;
 
-    // Internal variables
+typedef struct {
     float alpha;
     float oneMinusAlpha;
     float xPrev;
     float yPrev;
-} LowPassFilter_T;
+} LowPassFilter_t;
 
-void lowPassFilter_Init(LowPassFilter_T* lpf);
+void lowPassFilter_Init(LowPassFilter_t* lpf, const LowPassFilter_Params_t* params);
 
-void lowPassFilter_Step(LowPassFilter_T* lpf);
+void lowPassFilter_Step(LowPassFilter_t* lpf, const float x, float *y);
 
-
-#endif 
+#endif

@@ -12,69 +12,84 @@
 
 #include "constants.h"
 
-void FOC_Init(FOC_T* foc)
+void FOC_Init(FOC_T* foc, const FOC_Params_t* params)
 {
-    // initial values
-    foc->tqRef = 0.0f;
-    foc->wSense = 0.0f;
-    foc->thetaSense = 0.0f;
-    foc->vdcSense = 0.0f;
-    memset(&foc->iabcSense, 0, sizeof(iabc_T));
+    memcpy(&foc->params, params, sizeof(FOC_Params_t));
 
-    memset(&foc->dutyCycle, 0, sizeof(DutyCycle_T));
-    memset(&foc->vdq, 0, sizeof(Vdq_T));
-    memset(&foc->idqRef, 0, sizeof(idq_T));
-    foc->tqRefSat = 0.0f;
-    foc->tqLim = 0.0f;
-    foc->tqEst = 0.0f;
-    foc->rpmBase = 0.0f;
+    foc->voltageFilterParams = (LowPassFilter_Params_t){
+        .T = params->T,
+        .timeConst = FOC_VDC_FILTER_TIME_CONST,
+    };
+    lowPassFilter_Init(&foc->voltageFilter, &foc->voltageFilterParams);
 
-    // consistent params
-    foc->controller.T = foc->T;
-    foc->currentRef.polePairs = foc->polePairs;
+    foc->currentRefParams = (PMSMCurrentRef_Params_t){
+        .Vnom = params->Vnom,
+        .Pmax = params->Pmax,
+        .Tmax = params->Tmax,
+        .Imax = params->Imax,
+        .polePairs = params->polePairs,
+        .fluxLink = params->fluxLink,
+        .Ld = params->Ld,
+        .Ke = params->Ke,
+        .Modulation_Index_Threshold = params->Modulation_Index_Threshold,
+        .Modulation_Index_FwMax = params->Modulation_Index_FwMax,
+    };
+    PMSMCurrentRefInit();
 
-    PMSMCurrentRefInit(&foc->currentRef);
-    PMSMCurrentControllerInit(&foc->controller);
-    spwmInit(&foc->spwm);
-
-    // VDC filter
-    foc->vdcFilter.T = foc->T;
-    foc->vdcFilter.timeConst = FOC_VDC_FILTER_TIME_CONST;
-    lowPassFilter_Init(&foc->vdcFilter);
+    foc->currentControllerParams = (PMSMCurrentController_Params_t){
+        .T = params->T,
+        .pi_id = params->pi_id,
+        .pi_iq = params->pi_iq,
+    };
+    PMSMCurrentControllerInit(&foc->currentController, &foc->currentControllerParams);
 }
 
-void FOC_Step(FOC_T* foc)
+void FOC_Step(FOC_T* foc, const FOC_Input_t* in, FOC_Output_t* out)
 {
     // measurements
-    float wElec = foc->polePairs * foc->wSense;
-    float theta_e = fmodf(foc->polePairs * foc->thetaSense, TWO_PI);
+    float wElec = foc->params.polePairs * in->wSense;
+    float theta_e = fmodf(foc->params.polePairs * in->thetaSense, TWO_PI);
 
     // filter DC bus voltage
-    foc->vdcFilter.x = foc->vdcSense;
-    lowPassFilter_Step(&foc->vdcFilter);
+    float vdcFilt;
+    lowPassFilter_Step(&foc->voltageFilter, in->vdcSense, &vdcFilt);
 
-    foc->currentRef.tqRef = foc->tqRef;
-    foc->currentRef.we = wElec;
-    foc->currentRef.Vdc = foc->vdcSense;
-    PMSMCurrentRefStep(&foc->currentRef);
+    // generate idq current references
+    PMSMCurrentRef_Input_t currentRefIn = (PMSMCurrentRef_Input_t){
+        .tqRef = in->tqRef,
+        .we = wElec,
+        .Vdc = vdcFilt,
+    };
+    PMSMCurrentRef_Output_t currentRefOut;
+    PMSMCurrentRefStep(&foc->currentRefParams, &currentRefIn, &currentRefOut);
 
-    foc->controller.idqRef = foc->currentRef.idqRef;
-    foc->controller.iabcMeas = foc->iabcSense;
-    foc->controller.theta_e = theta_e;
-    foc->controller.we = wElec;
-    foc->controller.Vdc = foc->vdcSense;
-    PMSMCurrentControllerStep(&foc->controller);
+    // control Id and Iq to reference targets
+    PMSMCurrentController_Input_t currentControlIn = (PMSMCurrentController_Input_t){
+        .idqRef = currentRefOut.idqRef,
+        .iabcMeas = in->iabcSense,
+        .theta_e = theta_e,
+        .we = wElec,
+        .Vdc = vdcFilt,
+    };
+    PMSMCurrentController_Output_t currentControlOut;
+    PMSMCurrentControllerStep(&foc->currentController, &currentControlIn, &currentControlOut);
 
-    foc->spwm.Vdq = foc->controller.vdqOut;
-    foc->spwm.theta_e = theta_e;
-    foc->spwm.Vdc = foc->vdcSense;
-    spwmStep(&foc->spwm);
+    // convert Vdq to SPWM output
+    SPWM_Input_t spwmIn = (SPWM_Input_t){
+        .Vdq = currentControlOut.vdqOut,
+        .theta_e = theta_e,
+        .Vdc = vdcFilt,
+    };
+    SPWM_Output_t spwmOut;
+    spwmStep(&spwmIn, &spwmOut);
 
-    // outputs
-    foc->dutyCycle = foc->spwm.dutyCycles;
-    foc->vdq = foc->controller.vdqOut;
-    foc->idqRef = foc->controller.idqRef;
-    foc->tqRefSat = foc->currentRef.tqRefSat;
-    foc->tqLim = foc->currentRef.tqLim;
-    foc->tqEst = 0.0f; // TODO
+    // apply outputs
+    *out = (FOC_Output_t){
+        .dutyCycle = spwmOut.dutyCycles,
+        .vdq = currentControlOut.vdqOut,
+        .idqRef = currentRefOut.idqRef,
+        .tqRefSat = currentRefOut.tqRefSat,
+        .tqLim = currentRefOut.tqLim,
+        .tqEst = 0.0f,  // TODO add calculation
+    };
 }

@@ -9,61 +9,44 @@
 
 #include <string.h>
 
-void focSpeed_Init(focSpeed_T* foc)
+void FOCSpeed_Init(FOCSpeed_t* fs, const FOCSpeed_Params_t* params)
 {
-    // initial values
-    foc->rpmReq = 0.0f;
-    foc->rpmMeas = 0.0f;
-    foc->wSense = 0.0f;
-    foc->thetaSense = 0.0f;
-    foc->vdcSense = 0.0f;
-    memset(&foc->iabcSense, 0, sizeof(iabc_T));
-
-    memset(&foc->dutyCycle, 0, sizeof(DutyCycle_T));
-    memset(&foc->vdq, 0, sizeof(Vdq_T));
-    memset(&foc->idqRef, 0, sizeof(idq_T));
-    foc->tqRefSat = 0.0f;
-    foc->tqLim = 0.0f;
-    foc->tqEst = 0.0f;
-    foc->rpmBase = 0.0f;
-
-    // consistent params
-    foc->foc.T = foc->T;
-    foc->foc.currentRef.Tmax = foc->Tmax;
-    foc->pi_speed.T = foc->T;
-
-    // constant params
-    foc->pi_speed.upperLimit = foc->Tmax;
-    foc->pi_speed.lowerLimit = -foc->Tmax;
-
-    FOC_Init(&foc->foc);
-    piInit(&foc->pi_speed);
+    FOC_Init(&fs->foc, &params->foc);
+    piInit(&fs->pi_speed, &params->pi_speed);
 }
 
-void focSpeed_Step(focSpeed_T* foc)
+void FOCSpeed_Speed(FOCSpeed_t* fs, const FOCSpeed_Input_t* in, FOCSpeed_Output_t* out)
 {
-    pi_T* pi_speed = &foc->pi_speed;
-    pi_speed->setpoint = foc->rpmReq;
-    pi_speed->measurement = foc->rpmMeas;
-    piStep(pi_speed);
+    PI_Input_t piSpeedInput = (PI_Input_t){
+        .setpoint = in->rpmReq,
+        .measurement = in->rpmMeas,
+        .upperLimit = fs->params.foc.Tmax,
+        .lowerLimit = -fs->params.foc.Tmax,
+    };
+    PI_Output_t piSpeedOutput;
+    piStep(&fs->pi_speed, &piSpeedInput, &piSpeedOutput);
 
     float tqRef = 0.0f;
-    if (true == foc->tqEnable) {
-        tqRef = pi_speed->output;
+    if (piSpeedOutput.output > fs->params.tqEnableThreshold) {
+        tqRef = fs->params.tqEnableThreshold;
     }
-    
-    foc->foc.tqRef = tqRef;
-    foc->foc.iabcSense = foc->iabcSense;
-    foc->foc.wSense = foc->wSense;
-    foc->foc.thetaSense = foc->thetaSense;
-    foc->foc.vdcSense = foc->vdcSense;
-    FOC_Step(&foc->foc);
 
-    foc->dutyCycle = foc->foc.dutyCycle;
-    foc->vdq = foc->foc.vdq;
-    foc->idqRef = foc->foc.idqRef;
-    foc->tqRefSat = foc->foc.tqRefSat;
-    foc->tqLim = foc->foc.tqLim;
-    foc->tqEst = foc->foc.tqEst;
-    foc->rpmBase = foc->foc.rpmBase;
+    FOC_Input_t focInput = (FOC_Input_t){
+        .tqRef = tqRef,
+        .iabcSense = in->iabcSense,
+        .wSense = in->wSense,
+        .thetaSense = in->thetaSense,
+        .vdcSense = in->vdcSense,
+    };
+    FOC_Output_t focOutput;
+    FOC_Step(&fs->foc, &focInput, &focOutput);
+
+    *out = (FOCSpeed_Output_t){
+        .dutyCycle = focOutput.dutyCycle,
+        .vdq = focOutput.vdq,
+        .idqRef = focOutput.idqRef,
+        .tqRefSat = focOutput.tqRefSat,
+        .tqLim = focOutput.tqLim,
+        .tqEst = focOutput.tqEst,
+    };
 }

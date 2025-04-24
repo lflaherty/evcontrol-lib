@@ -12,56 +12,55 @@
 #include "transforms.h"
 #include "sat.h"
 
-void PMSMCurrentControllerInit(PMSMCurrentController_T* controller)
+void PMSMCurrentControllerInit(
+    PMSMCurrentController_t* controller, 
+    const PMSMCurrentController_Params_t *params)
 {
-    controller->idqRef.id = 0.0f;
-    controller->idqRef.iq = 0.0f;
-    controller->theta_e = 0.0f;
-    controller->we = 0.0f;
-    controller->Vdc = 0.0f;
-
-    controller->vdqOut.vd = 0.0f;
-    controller->vdqOut.vq = 0.0f;
-
-    controller->pi_id.T = controller->T; // make sure these are consistent
-    controller->pi_iq.T = controller->T;
-
-    piInit(&controller->pi_id);
-    piInit(&controller->pi_iq);
+    piInit(&controller->pi_id, &params->pi_id);
+    piInit(&controller->pi_iq, &params->pi_iq);
 }
 
-void PMSMCurrentControllerStep(PMSMCurrentController_T* controller)
+void PMSMCurrentControllerStep(PMSMCurrentController_t* controller,
+    const PMSMCurrentController_Input_t *in,
+    PMSMCurrentController_Output_t *out)
 {
     idq_T idqMeas;
-    parkTransform(&idqMeas, &controller->iabcMeas, controller->theta_e);
+    parkTransform(&idqMeas, &in->iabcMeas, in->theta_e);
 
-    float vphMax = controller->Vdc * ONE_SQRT3;
+    float vphMax = in->Vdc * ONE_SQRT3;
 
     // D axis PI controller
-    pi_T* pi_id = &controller->pi_id;
-    pi_id->upperLimit = vphMax;
-    pi_id->lowerLimit = -vphMax;
-    pi_id->setpoint = controller->idqRef.id;
-    pi_id->measurement = idqMeas.id;
-    piStep(pi_id);
-    float vd = pi_id->output;
+    PI_Input_t pi_id_input = (PI_Input_t){
+        .measurement = idqMeas.id,
+        .setpoint = in->idqRef.id,
+        .upperLimit = vphMax,
+        .lowerLimit = -vphMax,
+    };
+    PI_Output_t pi_id_output;
+    piStep(&controller->pi_id, &pi_id_input, &pi_id_output);
     
     // Q axis PI controller
-    pi_T* pi_iq = &controller->pi_iq;
-    pi_iq->upperLimit = vphMax;
-    pi_iq->lowerLimit = -vphMax;
-    pi_iq->setpoint = controller->idqRef.iq;
-    pi_iq->measurement = idqMeas.iq;
-    piStep(pi_iq);
-    float vq = pi_iq->output;
-    
+    PI_Input_t pi_iq_input = (PI_Input_t){
+        .measurement = idqMeas.iq,
+        .setpoint = in->idqRef.iq,
+        .upperLimit = vphMax,
+        .lowerLimit = -vphMax,
+    };
+    PI_Output_t pi_iq_output;
+    piStep(&controller->pi_iq, &pi_iq_input, &pi_iq_output);
+
+    float vd = pi_id_output.output;
+    float vq = pi_iq_output.output;
+
     // TODO feedforward control
 
     // voltage limiter
     // Don't need to saturate vq - the PI controller already does this
-    float vdLim = sqrtf(vphMax*vphMax - vq*vq);
+    float vdLim = sqrtf(powf(vphMax, 2) - powf(vq, 2));
     float vdSat = sat(vd, -vdLim, vdLim);
 
-    controller->vdqOut.vd = vdSat;
-    controller->vdqOut.vq = vq; // saturated by PI controller
+    out->vdqOut = (Vdq_T) {
+        .vd = vdSat,
+        .vq = vq,  // saturated by PI controller
+    };
 }

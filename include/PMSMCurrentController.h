@@ -13,37 +13,44 @@
 #include "types.h"
 #include "pid.h"
 
-typedef struct
-{
-    // Inputs
+typedef struct {
     idq_T idqRef;
     iabc_T iabcMeas;
     float theta_e;
     float we;
     float Vdc;
+} PMSMCurrentController_Input_t;
 
-    // Outputs
+typedef struct {
     Vdq_T vdqOut;
+} PMSMCurrentController_Output_t;
 
-    // Parameters
-    float T; // sample time
+typedef struct {
+    float T;  // sample time
+    PI_Params_t pi_id;
+    PI_Params_t pi_iq;
+} PMSMCurrentController_Params_t;
 
-    // Sub-modules
-    pi_T pi_iq; // parameters here must be initialized too
-    pi_T pi_id; // parameters here must be initialized too
-} PMSMCurrentController_T;
+typedef struct {
+    PMSMCurrentController_Params_t params;
+    PI_t pi_id;
+    PI_t pi_iq;
+} PMSMCurrentController_t;
 
 /**
  * Initializes the internal fields.
  * Does not update the parameters - these must be manually set.
  * controller->pi parameters must also be set.
  */
-void PMSMCurrentControllerInit(PMSMCurrentController_T* controller);
+void PMSMCurrentControllerInit(PMSMCurrentController_t* controller, 
+                               const PMSMCurrentController_Params_t *params);
 
 /**
  * Performs an update of the PMSM Current Controller
  * @param controller data used for input, output, and parameters
  */
-void PMSMCurrentControllerStep(PMSMCurrentController_T* controller);
+void PMSMCurrentControllerStep(PMSMCurrentController_t* controller,
+                               const PMSMCurrentController_Input_t *in,
+                               PMSMCurrentController_Output_t *out);
 
 #endif

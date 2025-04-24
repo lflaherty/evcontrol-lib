@@ -15,9 +15,7 @@
 
 #include <stdbool.h>
 
-typedef struct
-{
-    // inputs
+typedef struct {
     float rpmReq; // Requested rpm [rpm]
     float rpmMeas; // Measured rpm [rpm]
     bool tqEnable; // Enable torque (false to coast)
@@ -25,28 +23,32 @@ typedef struct
     float wSense; // mechnical angular velocity [rad/s]
     float thetaSense; // mechanical angle [rad]
     float vdcSense; // DC bus voltage [V]
+} FOCSpeed_Input_t;
 
-    // outputs
+typedef struct {
     DutyCycle_T dutyCycle;
     Vdq_T vdq;
     idq_T idqRef;
     float tqRefSat;
     float tqLim;
     float tqEst;
-    float rpmBase;
+} FOCSpeed_Output_t;
 
-    // params
-    float T; // sample time
-    float Tmax; // Max torque [Nm]
+typedef struct {
+  float tqEnableThreshold; // torque threshold for enabling torque output
+  FOC_Params_t foc;
+  PI_Params_t pi_speed;
+} FOCSpeed_Params_t;
 
-    // sub-modules (params must also be set)
-    FOC_T foc;
-    pi_T pi_speed;
-} focSpeed_T;
+typedef struct {
+  FOCSpeed_Params_t params;
+  FOC_T foc;
+  PI_t pi_speed;
+} FOCSpeed_t;
 
-void focSpeed_Init(focSpeed_T* foc);
+void FOCSpeed_Init(FOCSpeed_t* fs, const FOCSpeed_Params_t* params);
 
-void focSpeed_Step(focSpeed_T* foc);
+void FOCSpeed_Speed(FOCSpeed_t* fs, const FOCSpeed_Input_t* in, FOCSpeed_Output_t* out);
 
 
 #endif

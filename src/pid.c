@@ -7,31 +7,38 @@
 
 #include "pid.h"
 
+#include <string.h>
 #include "sat.h"
 
-void piInit(pi_T* pi)
+void piInit(PI_t* pi, const PI_Params_t *params)
 {
     pi->integrator = 0;
     pi->prevError = 0;
+    memcpy(&pi->params, params, sizeof(PI_Params_t));
 }
 
-void piStep(pi_T* pi)
+void piStep(PI_t* pi, const PI_Input_t *in, PI_Output_t *out)
 {
-    float error = pi->setpoint - pi->measurement;
+    const PI_Params_t *params = &pi->params;
+
+    float error = in->setpoint - in->measurement;
 
     // Proportional
-    float p = pi->Kp * error;
+    float p = params->Kp * error;
 
     // Integral
-    pi->integrator = pi->integrator + 0.5f * pi->Ki * pi->T * (error + pi->prevError);
+    pi->integrator = pi->integrator + 0.5f * params->Ki * params->T * (error + pi->prevError);
 
     // Integral anti-windup
-    pi->integrator = sat(pi->integrator, pi->lowerLimitInt, pi->upperLimitInt);
+    pi->integrator = sat(pi->integrator, params->lowerLimitInt, params->upperLimitInt);
 
     // Don't perform derivative... (PI not PID)
 
     // Output and saturation
-    pi->output = sat(p + pi->integrator, pi->lowerLimit, pi->upperLimit);
+    out->output = p + pi->integrator;
+    if (params->enableOutputSaturation) {
+        out->output = sat(out->output, in->lowerLimit, in->upperLimit);
+    }
 
     pi->prevError = error;
 }

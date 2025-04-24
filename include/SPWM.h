@@ -12,24 +12,19 @@
 
 typedef struct
 {
-    // Input
     Vdq_T Vdq;
     float theta_e;
     float Vdc;
+} SPWM_Input_t;
 
-    // Output
+typedef struct {
     DutyCycle_T dutyCycles;
-} SPWM_T;
-
-/**
- * Initializes the internal fields.
- */
-void spwmInit(SPWM_T* spwm);
+} SPWM_Output_t;
 
 /**
  * Performs an update of the Sinusoidal PWM
  * @param spwm SPWM data
  */
-void spwmStep(SPWM_T* spwm);
+void spwmStep(const SPWM_Input_t *in, SPWM_Output_t *out);
 
 #endif
