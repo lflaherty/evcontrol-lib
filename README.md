@@ -19,7 +19,7 @@ An example of simulation output:
 * `sim/` MATLAB simulation of controlling a motor and vehicle motion
   * `src/` MATLAB script implementation of field oriented control
   * `parameters/` Various parameters for the simulation
-    * `motor_emrax268.m` Simulation parameters for the Emrax 268 motor.
+    * `motor_emrax268.m` Simulation parameters for the Emrax 268 motor - [https://emrax.com/e-motors/emrax-268/](https://emrax.com/e-motors/emrax-268/)
     * `vehicle.m` Constant parameters used for the vehicle sim
     * `loadOnStartup.m` Invokes the two other params scripts
   * `scripts/` scripts used to assist simulation
