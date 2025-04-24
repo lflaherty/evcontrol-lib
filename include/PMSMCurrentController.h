@@ -22,6 +22,7 @@ typedef struct {
 
 typedef struct {
   Vdq_T vdqOut;
+  idq_T idqMeas;
 } PMSMCurrentController_Output_t;
 
 typedef struct {

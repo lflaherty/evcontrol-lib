@@ -13,6 +13,7 @@
 #include "PMSMCurrentRef.h"
 #include "SPWM.h"
 #include "lowPassFilter.h"
+#include "torqueEst.h"
 
 #define FOC_VDC_FILTER_TIME_CONST 0.01f
 
@@ -42,6 +43,7 @@ typedef struct {
   uint16_t polePairs; // Pole pairs
   float fluxLink;     // Flux linkage [Webers]
   float Ld;           // D axis inductance [H]
+  float Lq;           // Q axis inducatnce [H]
   float Ke;           // back emf constant [V/rpm]
 
   // Control parameters
@@ -62,6 +64,8 @@ typedef struct {
 
   LowPassFilter_Params_t voltageFilterParams;
   LowPassFilter_t voltageFilter;
+
+  TorqueEst_Params_t torqueEstParams;
 } FOC_T;
 
 void FOC_Init(FOC_T *foc, const FOC_Params_t *params);

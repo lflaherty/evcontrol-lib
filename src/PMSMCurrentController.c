@@ -20,14 +20,13 @@ void PMSMCurrentControllerInit(PMSMCurrentController_t *controller,
 void PMSMCurrentControllerStep(PMSMCurrentController_t *controller,
                                const PMSMCurrentController_Input_t *in,
                                PMSMCurrentController_Output_t *out) {
-  idq_T idqMeas;
-  parkTransform(&idqMeas, &in->iabcMeas, in->theta_e);
+  parkTransform(&out->idqMeas, &in->iabcMeas, in->theta_e);
 
   float vphMax = in->Vdc * ONE_SQRT3;
 
   // D axis PI controller
   PI_Input_t pi_id_input = (PI_Input_t){
-      .measurement = idqMeas.id,
+      .measurement = out->idqMeas.id,
       .setpoint = in->idqRef.id,
       .upperLimit = vphMax,
       .lowerLimit = -vphMax,
@@ -37,7 +36,7 @@ void PMSMCurrentControllerStep(PMSMCurrentController_t *controller,
 
   // Q axis PI controller
   PI_Input_t pi_iq_input = (PI_Input_t){
-      .measurement = idqMeas.iq,
+      .measurement = out->idqMeas.iq,
       .setpoint = in->idqRef.iq,
       .upperLimit = vphMax,
       .lowerLimit = -vphMax,

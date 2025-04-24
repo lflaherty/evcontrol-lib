@@ -10,6 +10,7 @@
 #include <string.h>
 
 #include "constants.h"
+#include "torqueEst.h"
 
 void FOC_Init(FOC_T *foc, const FOC_Params_t *params) {
   memcpy(&foc->params, params, sizeof(FOC_Params_t));
@@ -41,6 +42,13 @@ void FOC_Init(FOC_T *foc, const FOC_Params_t *params) {
   };
   PMSMCurrentControllerInit(&foc->currentController,
                             &foc->currentControllerParams);
+
+  foc->torqueEstParams = (TorqueEst_Params_t){
+    .polePairs = params->polePairs,
+    .fluxLink = params->fluxLink,
+    .Ld = params->Ld,
+    .Lq = params->Lq,
+  };
 }
 
 void FOC_Step(FOC_T *foc, const FOC_Input_t *in, FOC_Output_t *out) {
@@ -83,6 +91,9 @@ void FOC_Step(FOC_T *foc, const FOC_Input_t *in, FOC_Output_t *out) {
   SPWM_Output_t spwmOut;
   spwmStep(&spwmIn, &spwmOut);
 
+  // estimate torque
+  float toqueNm = TorqeEst(&foc->torqueEstParams, &currentControlOut.idqMeas);
+
   // apply outputs
   *out = (FOC_Output_t){
       .dutyCycle = spwmOut.dutyCycles,
@@ -90,6 +101,6 @@ void FOC_Step(FOC_T *foc, const FOC_Input_t *in, FOC_Output_t *out) {
       .idqRef = currentRefOut.idqRef,
       .tqRefSat = currentRefOut.tqRefSat,
       .tqLim = currentRefOut.tqLim,
-      .tqEst = 0.0f, // TODO add calculation
+      .tqEst = toqueNm,
   };
 }
