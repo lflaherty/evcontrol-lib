@@ -1,7 +1,6 @@
 /**
  * sat.h
- * 
- *  Created on: Oct 24 2021
+ *
  *      Author: Liam Flaherty
  */
 

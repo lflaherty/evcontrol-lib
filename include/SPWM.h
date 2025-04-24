@@ -1,7 +1,6 @@
 /**
  * SPWM.h
- * 
- *  Created on: Oct 24 2021
+ *
  *      Author: Liam Flaherty
  */
 
@@ -10,15 +9,14 @@
 
 #include "types.h"
 
-typedef struct
-{
-    Vdq_T Vdq;
-    float theta_e;
-    float Vdc;
+typedef struct {
+  Vdq_T Vdq;
+  float theta_e;
+  float Vdc;
 } SPWM_Input_t;
 
 typedef struct {
-    DutyCycle_T dutyCycles;
+  DutyCycle_T dutyCycles;
 } SPWM_Output_t;
 
 /**
