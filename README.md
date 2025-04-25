@@ -63,11 +63,11 @@ c
 
 This converts the three phase vector space into a vector space for direct and quadrature (with respect to the rotor). The reference frame basis vectors are now orthogonal, and so can be controlled independently, which we do via two separate PI controllers.
 
-![Three Phase](doc/images/threephase_dq.png).
+![Three Phase](doc/images/threephase_dq.png)
 
 And when the rotor rotates, the reference frame for our controller also rotates:
 
-![Three Phase](doc/images/threephase_dq_rotating.png).
+![Three Phase](doc/images/threephase_dq_rotating.png)
 
 In DQ axis, motor torque is given as:
 ```math
@@ -77,7 +77,7 @@ Where $p$ is the number of number of pole pairs, $\phi_f$ is flux linkage, $L_d$
 
 Zero D Axis Control observes maximum torque output with all of the current directed into the Q axis and none into the 0 axis, which sets our reference generation scheme. Our reference currents are:
 ```math
-i_q = 0 \\
+i_q = 0 \\\\
 i_d = \frac{2 T}{3 p \phi_f}
 ```
 
@@ -85,7 +85,7 @@ An inverse park transform can be applied to these to obtain the three phase volt
 
 The torque output is limited to available current and voltage:
 ```math
-\sqrt{I_d^2 + I_q^2} \le I_{max} \\
+\sqrt{I_d^2 + I_q^2} \le I_{max} \\\\
 \sqrt{V_d^2 + V_q^2} \le V_{max}
 ```
 where
