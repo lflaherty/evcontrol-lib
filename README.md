@@ -50,8 +50,8 @@ q \\
 \end{bmatrix}
 = \frac{2}{3}
 \begin{bmatrix}
-\sin{\theta} & \sin{(\theta - \frac{2\pi}{3})} & sin{(\theta + \frac{2\pi}{3})} \\
-\cos{\theta} & \cos{(\theta - \frac{2\pi}{3})} & cos{(\theta + \frac{2\pi}{3})} \\
+\sin{\theta} & \sin{(\theta - \frac{2\pi}{3})} & \sin{(\theta + \frac{2\pi}{3})} \\
+\cos{\theta} & \cos{(\theta - \frac{2\pi}{3})} & \cos{(\theta + \frac{2\pi}{3})} \\
 \frac{1}{2} & \frac{1}{2} & \frac{1}{2} 
 \end{bmatrix}
 \begin{bmatrix}
